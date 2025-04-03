@@ -28,7 +28,7 @@ sessions = {}
 class ChatPayload(BaseModel):
     model: str
     prompt: str
-    category: str
+    category: int
     session_id:str
 
 @app.get("/validate-key")
@@ -77,8 +77,8 @@ def delete_session(session_id: str):
 import random
 @app.post("/save")
 def save(payload:dict):
-    print("payload-->>",payload)
-    num = random.randint(1, 100)
+    print("save-->>",payload)
+    num = random.randint(1, 1000)
     print("num-->>",num)
     id = num
     
@@ -133,7 +133,7 @@ def generate_response(language: str):
             "```\n"
         ]
     else:
-        response = ["### Error\n", "- Unsupported language. Please choose Python or Java.\n"]
+        response = ["Answer will be generated please try again later.\n"]
     
     return response
 
@@ -144,12 +144,118 @@ async def stream_response(language: str):
         yield chunk
         await asyncio.sleep(0.5)  # Simulate streaming delay
 
+
 @app.post("/stream-chat")
 def stream_chat(payload: ChatPayload, response: Response, session_id: Optional[str] = Cookie(None)):
     params = payload.dict()
     # print("params-->>",params)
     """Endpoint to stream the response for a given programming language."""
     return StreamingResponse(stream_response(params["prompt"]), media_type="text/plain")
+
+@app.post("/get_session_ids")
+def get_session_ids(payload: dict, response: Response):
+
+    #{"ide_type":7}
+
+    params = payload
+    print("session -->>",params)
+    session_list = [{"session_id":"session1dfwefwefdwfvgvsdfvsdfvsdfvvfd",
+                     "created_date":"2025-03-12 17:22:40",
+                     "count":5,
+                     "first_prompt":"what is python"},
+                    {"session_id":"fghegfhdgfgfds",
+                     "created_date":"2024-03-15 17:22:40",
+                     "count":30,
+                     "first_prompt":"what is java"},
+                    {"session_id":"pdsfdwsdgsegsfd",
+                     "created_date":"2022-03-12 17:22:40",
+                     "count":10,
+                     "first_prompt":"what is sem"},
+
+                     {"session_id":"sfgfdgdfg34763467",
+                                          "created_date":"2022-03-12 17:22:40",
+                                          "count":60,
+                                          "first_prompt":"hi"},
+                                          
+
+                     {"session_id":"fdgfdfgfh",
+                                          "created_date":"2022-03-12 17:22:40",
+                                          "count":70,
+                                          "first_prompt":"how are you"}]
+    result = {"status":"Success","result":session_list}
+    print(result)
+    return result
+
+
+@app.post("/get_chat_history")
+def get_chat_history(payload: dict, response: Response):
+
+
+
+
+#    {"index":10,
+#       "limit":1,
+#       "ide_type":1,
+#       "session_id":"hdshfj"}
+    try:
+        params = payload
+        print("history -->>",params)
+        hsitory_list = [{"ps_user_prompt_history_id":30,
+                           "prompt":"question 111",
+                           "response":"programming language",
+                           "rating":None,
+                           "feedback":None,
+                         "timestamp":"2025-03-12 14:22:40",
+                         },
+
+                         {"ps_user_prompt_history_id":45,
+                            "prompt":"question 2222",
+                            "response":"python python python",
+                            "rating":5,
+                            "feedback":"good",
+                          "timestamp":"2025-03-13 16:22:40",
+                          },
+
+                           {"ps_user_prompt_history_id":50,
+                          "prompt":"hi",
+                          "response":"hquestion 33333",
+                          "rating":3,
+                          "feedback":None,
+                        "timestamp":"2025-03-14 18:22:40",
+                        },
+
+                           {"ps_user_prompt_history_id":60,
+                          "prompt":"hquestion 4444",
+                          "response":"Not bad okay fosnfvihiuhggvnigunh djgfbvufhigufhdk sdjkgfvhdg hfgivsf gnj",
+                          "rating":None,
+                          "feedback":"testing",
+                        "timestamp":"2025-03-15 24:22:40",
+                        },
+                        {"ps_user_prompt_history_id":60,
+                          "prompt":"hquestion 5555555",
+                          "response":"Not bad okay fosnfvihiuhggvnigunh djgfbvufhigufhdk sdjkgfvhdg hfgivsf gnj",
+                          "rating":None,
+                          "feedback":None,
+                        "timestamp":"2025-03-15 24:22:40",
+                        },
+                     
+                         ]
+        result = {"status":"Success","result":hsitory_list}
+        #print(result)
+        return result
+    except Exception as e:
+        import traceback 
+        print(traceback.format_exc())
+
+
+
+
+@app.delete("/delete_session/{session_id}")
+def delete_session(session_id, response: Response):
+    
+    print("session_id-->>",session_id)
+    
+    return {"status":"Success","result":"session deleted successfully"}
 
 
 
